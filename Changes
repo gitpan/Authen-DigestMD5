@@ -1,0 +1,6 @@
+Revision history for Perl extension Authen::DigestMD5.
+
+0.01  Fri Oct 24 13:24:53 2003
+	- original version; created by h2xs 1.22 with options
+		-AX -n Authen::DigestMD5
+
