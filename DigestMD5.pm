@@ -2,7 +2,7 @@ package Authen::DigestMD5;
 
 use 5.006;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 package Authen::DigestMD5::Packet;
 use strict;
@@ -192,8 +192,8 @@ Authen::DigestMD5 - SASL DIGEST-MD5 authentication (RFC2831)
 
   use Authen::DigestMD5;
 
-  use OpenLDAP;
-  $ld=OpenLDAP::Client->new($host);
+  use OnLDAP;
+  $ld=OnLDAP::Client->new($host);
   ($rc, $id)=$ld->sasl_bind(undef, 'DIGEST-MD5');
   ($rc, $msg)=$ld->result($id);
   ($rc, $req)=$ld->parse_sasl_bind_result($msg);
