@@ -2,13 +2,13 @@ package Authen::DigestMD5;
 
 use 5.008;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 package Authen::DigestMD5::Packet;
 use strict;
 use warnings;
 
-my %quote=map{$_=>1} qw(username realm nonce cnonce digest-uri qop);
+my %quote=map{$_=>1} qw(username realm nonce cnonce digest-uri qop cipher);
 
 sub _quote($$) {
     shift;
@@ -25,7 +25,7 @@ sub _split {
     shift;
     my $str=shift;
     my %pair;
-    while ($str=~/\G\s*(\w+)\s*=\s*("([^\\"]+|\\.)*"|[^,]+)\s*(?:,|$)/g) {
+    while ($str=~/\G\s*([\w\-]+)\s*=\s*("([^\\"]+|\\.)*"|[^,]+)\s*(?:,|$)/g) {
 	$pair{$1}=$2;
     }
     my ($k, $v);
@@ -69,7 +69,7 @@ sub _public {
 sub input {
     my ($this, $str)=@_;
     return unless defined $str;
-    %$this = (%$this, $this->_split($str));
+    $this->set($this->_split($str));
 }
 
 sub output {
@@ -136,22 +136,22 @@ sub _public {
 
 sub got_request {
     my $this=shift;
-    my $res=shift;
-    # $this->{_r}=$res;
+    my $req=shift;
+    # $this->{_r}=$req;
     for my $k (qw(nonce realm charset)) {
-	$this->{$k}=$res->{$k} if exists $res->{$k};
+	$this->{$k}=$req->{$k} if exists $req->{$k};
     }
-    $this->{nc}=sprintf("%08d", ++$this->{_nc}{$res->{nonce}})
-	if exists $res->{nonce};
-    if (exists $res->{qop}) {
-	my @qop=split(/\s*,\s*/, $res->{qop});
+    $this->{nc}=sprintf("%08d", ++$this->{_nc}{$req->{nonce}})
+	if exists $req->{nonce};
+    if (exists $req->{qop}) {
+	my @qop=split(/\s*,\s*/, $req->{qop});
 	if (grep {$_ eq 'auth-int'} @qop) {
 	    $this->{qop}='auth-int'
 	}
 	elsif (grep {$_ eq 'auth'} @qop) {
 	    $this->{qop}='auth'
 	}
-	else { croak "not supported qop found ($res->{qop})" }
+	else { croak "not supported qop found ($req->{qop})" }
     }
 }
 
