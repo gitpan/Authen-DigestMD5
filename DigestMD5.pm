@@ -1,8 +1,8 @@
 package Authen::DigestMD5;
 
-use 5.008;
+use 5.006;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 package Authen::DigestMD5::Packet;
 use strict;
@@ -123,8 +123,6 @@ use Carp;
 sub new {
     my $this=shift->SUPER::new(@_);
     $this->{_nc}={};
-    $this->{cnonce}=md5_hex(join(':', time, rand, $$))
-	unless defined $this->{cnonce};
     return $this;
 }
 
@@ -141,8 +139,8 @@ sub got_request {
     for my $k (qw(nonce realm charset)) {
 	$this->{$k}=$req->{$k} if exists $req->{$k};
     }
-    $this->{nc}=sprintf("%08d", ++$this->{_nc}{$req->{nonce}})
-	if exists $req->{nonce};
+    #$this->{nc}=sprintf("%08d", ++$this->{_nc}{$req->{nonce}})
+    #  if exists $req->{nonce};
     if (exists $req->{qop}) {
 	my @qop=split(/\s*,\s*/, $req->{qop});
 	if (grep {$_ eq 'auth-int'} @qop) {
@@ -157,6 +155,12 @@ sub got_request {
 
 sub add_digest {
     my $this=shift;
+
+    $this->{cnonce}=md5_hex(join(':', time, rand, $$));
+      # unless defined $this->{cnonce};
+
+    $this->{nc}=sprintf("%08d", ++$this->{_nc}{$this->{nonce}})
+	if exists $this->{nonce};
 
     my %pair=((map { $_, $this->{$_} } $this->_public), @_);
 
